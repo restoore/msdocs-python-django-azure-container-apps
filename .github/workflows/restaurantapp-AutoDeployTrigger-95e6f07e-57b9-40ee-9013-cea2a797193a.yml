@@ -1,0 +1,45 @@
+name: Trigger auto deployment for restaurantapp
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/restaurantapp-AutoDeployTrigger-95e6f07e-57b9-40ee-9013-cea2a797193a.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.RESTAURANTAPP_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          _dockerfilePathKey_: _dockerfilePath_
+          _targetLabelKey_: _targetLabel_
+          registryUrl: acrdstacademo2211.azurecr.io
+          registryUsername: ${{ secrets.RESTAURANTAPP_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.RESTAURANTAPP_REGISTRY_PASSWORD }}
+          containerAppName: restaurantapp
+          resourceGroup: rg-azr-dst-academo
+          imageToBuild: acrdstacademo2211.azurecr.io/restaurantapp:${{ github.sha }}
+          
+            
+
+     
+
